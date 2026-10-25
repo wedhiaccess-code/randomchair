@@ -58,6 +58,12 @@
             margin-bottom: 15px;
             font-weight: 600;
         }
+            #storage-notice {
+                display: none;
+                margin-bottom: 15px;
+                color: #8a4b08;
+                font-size: 14px;
+            }
         #display-number {
             font-size: 90px;
             font-weight: bold;
@@ -162,6 +168,7 @@
     </div>
 
     <div class="counter" id="person-counter">Orang ke: 1 / 33</div>
+    <div id="storage-notice" role="status"></div>
     
     <div id="display-number">--</div>
     
@@ -189,6 +196,15 @@
     let currentPerson = 1;
     let intervalId = null;
     let isRolling = false;
+    let storageWarningShown = false;
+
+    const storageKeys = [
+        'dyn_chosenNumbers',
+        'dyn_availableNumbers',
+        'dyn_currentPerson',
+        'dyn_maxPeople',
+        'dyn_maxSeats'
+    ];
 
     const display = document.getElementById('display-number');
     const btn = document.getElementById('action-btn');
@@ -196,13 +212,32 @@
     const historyList = document.getElementById('history-list');
     const inputPeople = document.getElementById('input-people');
     const inputSeats = document.getElementById('input-seats');
+    const storageNotice = document.getElementById('storage-notice');
+
+    function showStorageWarning(error) {
+        if (storageWarningShown) return;
+
+        storageWarningShown = true;
+        storageNotice.innerText = 'Penyimpanan browser tidak tersedia. Undian tetap berjalan, tetapi hasil tidak tersimpan setelah halaman ditutup.';
+        storageNotice.style.display = 'block';
+        console.warn('Penyimpanan lokal tidak tersedia; aplikasi berjalan tanpa penyimpanan permanen.', error);
+    }
+
+    function readSavedValue(key) {
+        try {
+            return window.localStorage.getItem(key);
+        } catch (error) {
+            showStorageWarning(error);
+            return null;
+        }
+    }
 
     function loadSavedData() {
-        const savedChosen = localStorage.getItem('dyn_chosenNumbers');
-        const savedAvailable = localStorage.getItem('dyn_availableNumbers');
-        const savedPerson = localStorage.getItem('dyn_currentPerson');
-        const savedMaxPeople = localStorage.getItem('dyn_maxPeople');
-        const savedMaxSeats = localStorage.getItem('dyn_maxSeats');
+        const savedChosen = readSavedValue('dyn_chosenNumbers');
+        const savedAvailable = readSavedValue('dyn_availableNumbers');
+        const savedPerson = readSavedValue('dyn_currentPerson');
+        const savedMaxPeople = readSavedValue('dyn_maxPeople');
+        const savedMaxSeats = readSavedValue('dyn_maxSeats');
 
         if (savedChosen && savedAvailable && savedPerson && savedMaxPeople && savedMaxSeats) {
             chosenNumbers = JSON.parse(savedChosen);
@@ -270,11 +305,15 @@
     }
 
     function saveToLocalStorage() {
-        localStorage.setItem('dyn_chosenNumbers', JSON.stringify(chosenNumbers));
-        localStorage.setItem('dyn_availableNumbers', JSON.stringify(availableNumbers));
-        localStorage.setItem('dyn_currentPerson', currentPerson.toString());
-        localStorage.setItem('dyn_maxPeople', maxPeople.toString());
-        localStorage.setItem('dyn_maxSeats', maxSeats.toString());
+        try {
+            window.localStorage.setItem('dyn_chosenNumbers', JSON.stringify(chosenNumbers));
+            window.localStorage.setItem('dyn_availableNumbers', JSON.stringify(availableNumbers));
+            window.localStorage.setItem('dyn_currentPerson', currentPerson.toString());
+            window.localStorage.setItem('dyn_maxPeople', maxPeople.toString());
+            window.localStorage.setItem('dyn_maxSeats', maxSeats.toString());
+        } catch (error) {
+            showStorageWarning(error);
+        }
     }
 
     function updateUIState() {
@@ -332,7 +371,11 @@ historyList.appendChild(li);
 }
 function resetData() {
 if (confirm("Apakah Anda yakin ingin me-reset aplikasi? Seluruh riwayat saat ini akan dihapus.")) {
-localStorage.clear();
+try {
+    storageKeys.forEach(key => window.localStorage.removeItem(key));
+} catch (error) {
+    showStorageWarning(error);
+}
 initNewGame();
 }
 }
