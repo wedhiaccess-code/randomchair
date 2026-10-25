@@ -331,10 +331,17 @@ li.innerText = `Orang ${order} → Kursi ${number}`;
 historyList.appendChild(li);
 }
 function resetData() {
-if (confirm("Apakah Anda yakin ingin me-reset aplikasi? Seluruh riwayat saat ini akan dihapus.")) {
-localStorage.clear();
-initNewGame();
+    if (confirm("Apakah Anda yakin ingin me-reset aplikasi? Seluruh riwayat saat ini akan dihapus.")) {
+        // Hapus data undian secara spesifik (lebih aman untuk GitHub Pages)
+        localStorage.removeItem('dyn_chosenNumbers');
+        localStorage.removeItem('dyn_availableNumbers');
+        localStorage.removeItem('dyn_currentPerson');
+        localStorage.removeItem('dyn_maxPeople');
+        localStorage.removeItem('dyn_maxSeats');
+        initNewGame();
+    }
 }
+    
 }
 // Fungsi Utama Ekspor Data ke CSV Excel
 function exportToCSV() {
