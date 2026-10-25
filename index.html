@@ -153,11 +153,11 @@
     <div class="setup-box">
         <div class="input-group">
             <label for="input-people">Jumlah Orang</label>
-            <input type="number" id="input-people" value="33" min="1" onchange="applySettings()">
+            <input type="number" id="input-people" value="33" min="1">
         </div>
         <div class="input-group">
             <label for="input-seats">Jumlah Kursi</label>
-            <input type="number" id="input-seats" value="33" min="1" onchange="applySettings()">
+            <input type="number" id="input-seats" value="33" min="1">
         </div>
     </div>
 
@@ -166,11 +166,11 @@
     <div id="display-number">--</div>
     
     <div class="btn-group">
-        <button id="action-btn" onclick="handleButtonClick()">MULAI ACAK</button>
+        <button id="action-btn">MULAI ACAK</button>
         
         <div class="opt-buttons">
-            <button id="export-btn" class="opt-btn" onclick="exportToCSV()">Simpan ke Excel (CSV)</button>
-            <button id="reset-btn" class="opt-btn" onclick="resetData()">Reset & Ulang</button>
+            <button id="export-btn" class="opt-btn">Simpan ke Excel (CSV)</button>
+            <button id="reset-btn" class="opt-btn">Reset & Ulang</button>
         </div>
     </div>
 
@@ -331,17 +331,10 @@ li.innerText = `Orang ${order} → Kursi ${number}`;
 historyList.appendChild(li);
 }
 function resetData() {
-    if (confirm("Apakah Anda yakin ingin me-reset aplikasi? Seluruh riwayat saat ini akan dihapus.")) {
-        // Hapus data undian secara spesifik (lebih aman untuk GitHub Pages)
-        localStorage.removeItem('dyn_chosenNumbers');
-        localStorage.removeItem('dyn_availableNumbers');
-        localStorage.removeItem('dyn_currentPerson');
-        localStorage.removeItem('dyn_maxPeople');
-        localStorage.removeItem('dyn_maxSeats');
-        initNewGame();
-    }
+if (confirm("Apakah Anda yakin ingin me-reset aplikasi? Seluruh riwayat saat ini akan dihapus.")) {
+localStorage.clear();
+initNewGame();
 }
-    
 }
 // Fungsi Utama Ekspor Data ke CSV Excel
 function exportToCSV() {
@@ -365,4 +358,17 @@ document.body.appendChild(link);
 link.click();
 document.body.removeChild(link);
 }
-window.onload = loadSavedData;
+function initializeApp() {
+    inputPeople.addEventListener('change', applySettings);
+    inputSeats.addEventListener('change', applySettings);
+    btn.addEventListener('click', handleButtonClick);
+    document.getElementById('export-btn').addEventListener('click', exportToCSV);
+    document.getElementById('reset-btn').addEventListener('click', resetData);
+    loadSavedData();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
